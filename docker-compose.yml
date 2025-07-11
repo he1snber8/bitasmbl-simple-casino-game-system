@@ -1,5 +1,58 @@
-version: 3
+version: '3.9'
 
 services:
-  lol:
-    --
+  authservice:
+    image: authservice
+    build:
+      context: .
+      dockerfile: CasinoGame.AuthService/Dockerfile
+    ports:
+      - "5062:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Jwt__Key=ThisIsASecretKeyForJwtDontShare123123
+      - Jwt__Issuer=AuthService
+      - Jwt__Audience=CasinoSystem
+    networks:
+      - casinosystem
+
+  walletservice:
+    image: walletservice
+    build:
+      context: .
+      dockerfile: CasinoGame.WalletService/Dockerfile
+    ports:
+      - "5063:8080"
+    depends_on:
+      - authservice
+    networks:
+      - casinosystem
+
+  lobbyservice:
+    image: lobbyservice
+    build:
+      context: .
+      dockerfile: CasinoGame.LobbyService/Dockerfile
+    ports:
+      - "5064:8080"
+    depends_on:
+      - authservice
+      - walletservice
+    networks:
+      - casinosystem
+
+  gameservice:
+    image: gameservice
+    build:
+      context: .
+      dockerfile: CasinoGame.GameService/Dockerfile
+    ports:
+      - "5065:8080"
+    depends_on:
+      - authservice
+    networks:
+      - casinosystem
+
+networks:
+  casinosystem:
+    driver: bridge
